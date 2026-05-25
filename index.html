@@ -521,7 +521,7 @@ async function enviar(){
       allAdjBase64.forEach(f => templateParams.message += `• ${f.name}\n`);
     }
 
-    await emailjs.send('service_a4hm6sb', 'air3te3', templateParams, {publicKey: 'rEXqEhGtvHco_F1Zx'});
+    await emailjs.send('service_a4hm6sb', 'template_xzc9l6l', templateParams, {publicKey: 'rEXqEhGtvHco_F1Zx'});
 
     // If there are attachments, also open mailto as fallback so files can be sent
     if(allAdjBase64.length > 0){
