@@ -272,9 +272,9 @@ function buildAsesorHTML(id){
     <div class="section-title">Anexos — Copias de Títulos y Certificaciones</div>
     <div class="adjuntos-area" onclick="document.getElementById('adj-input-${id}').click()">
       <p>📎 Haz clic para adjuntar archivos</p>
-      <span>Selecciona múltiples archivos (PDF, JPG, PNG) — un archivo por título o certificación</span>
+      <span>Selecciona imágenes (JPG, PNG) — una imagen por título o certificación</span>
     </div>
-    <input type="file" id="adj-input-${id}" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="agregarAdjuntos(${id},this)">
+    <input type="file" id="adj-input-${id}" multiple accept=".jpg,.jpeg,.png" style="display:none" onchange="agregarAdjuntos(${id},this)">
     <div class="adjuntos-list" id="adj-list-${id}"></div>
 
     <div class="notas-box">
@@ -425,7 +425,17 @@ const adjuntosData = {};
 function agregarAdjuntos(id, input){
   if(!adjuntosData[id]) adjuntosData[id]=[];
   Array.from(input.files).forEach(f=>{
-    if(!adjuntosData[id].find(a=>a.name===f.name&&a.size===f.size)) adjuntosData[id].push(f);
+    if(adjuntosData[id].find(a=>a.name===f.name&&a.size===f.size)) return;
+    // Detect landscape before storing
+    const img = new Image();
+    const url = URL.createObjectURL(f);
+    img.onload = () => {
+      f.isLandscape = img.naturalWidth > img.naturalHeight;
+      URL.revokeObjectURL(url);
+      renderAdjuntos(id);
+    };
+    img.src = url;
+    adjuntosData[id].push(f);
   });
   renderAdjuntos(id);
   input.value='';
@@ -521,7 +531,7 @@ async function enviar(){
       const adjuntos = [];
       for(const file of (adjuntosData[id]||[])){
         const data = await fileToDataURL(file);
-        adjuntos.push({name: file.name, type: file.type, data: data});
+        adjuntos.push({name: file.name, type: file.type, data: data, isLandscape: file.isLandscape||false});
       }
       asesores.push({
         nombre: gv('nombre'), cedula: gv('cedula'), idInst: gv('idInst'),
